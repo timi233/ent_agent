@@ -24,8 +24,8 @@ class DatabaseConfig:
     def __init__(self):
         self.host = os.getenv("DB_HOST", "localhost")
         self.port = int(os.getenv("DB_PORT", "3306"))
-        self.username = os.getenv("DB_USERNAME", "City_Brain_user_mysql")
-        self.password = os.getenv("DB_PASSWORD", "CityBrain@2024")
+        self.username = os.getenv("DB_USERNAME", "root")
+        self.password = os.getenv("DB_PASSWORD", "1qaz2wsx")
         self.database = os.getenv("DB_DATABASE", "City_Brain_DB")
         self.charset = os.getenv("DB_CHARSET", "utf8mb4")
         self.pool_size = int(os.getenv("DB_POOL_SIZE", "10"))

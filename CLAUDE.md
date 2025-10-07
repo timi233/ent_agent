@@ -21,23 +21,23 @@ The codebase contains THREE separate systems:
    - Port: 9003
    - Entry: `main.py`
    - Architecture: api/ → domain/ → infrastructure/
+   - **Use this for all new development**
 
 2. **city_brain_system/** - Legacy backend (being phased out)
    - Port: 9003
    - Simpler structure, older implementation
+   - **Do not use for new features**
 
 3. **city_brain_frontend/** - Vue 3 frontend
    - Port: 9002
    - Proxies API requests to backend on port 9003
 
-**Use city_brain_system_refactored for new development** - it implements Clean Architecture with proper separation of concerns.
-
 ## Common Commands
 
-### Backend (Refactored - Primary)
+### Backend
 
 ```bash
-# Start refactored backend
+# Start backend
 ./start_refactored_backend.sh
 
 # Or manually
@@ -49,22 +49,12 @@ cd city_brain_system_refactored
 pip install -r requirements.txt
 
 # Run tests
-python -m pytest tests/                    # All tests
+python -m pytest tests/                    # All tests (in tests/ subdirectory)
 python test_infrastructure.py              # Infrastructure tests
 python test_data_layer_complete.py         # Data layer tests
 python test_external_services.py           # External API tests
 python test_integration_e2e.py            # End-to-end tests
 python test_performance_benchmark.py       # Performance tests
-```
-
-### Backend (Legacy)
-
-```bash
-cd city_brain_system
-make install          # Install dependencies
-make test            # Run tests (pytest)
-make run             # Start server
-make clean           # Clean cache files
 ```
 
 ### Frontend
@@ -132,8 +122,11 @@ city_brain_system_refactored/
 │   │       ├── base_repository.py
 │   │       ├── customer_repository.py
 │   │       ├── enterprise_repository.py
+│   │       ├── enterprise_qd_repository.py
 │   │       ├── industry_repository.py
-│   │       └── area_repository.py
+│   │       ├── area_repository.py
+│   │       ├── opportunities_repository.py  # AS/IPG CRM data
+│   │       └── work_order_repository.py     # Service tickets
 │   ├── external/                 # External service clients
 │   │   ├── bocha_client.py       # Bocha AI search
 │   │   ├── llm_client.py         # LLM client
@@ -165,7 +158,10 @@ city_brain_system_refactored/
 
 ### Database Schema
 
-The system uses MySQL with the following core tables:
+The system uses **multiple MySQL databases** running in Docker containers:
+
+#### Primary Database (City_Brain_DB)
+Core enterprise data tables:
 - `QD_customer` - Customer enterprises
 - `QD_area` - Geographic areas
 - `QD_industry` - Industries
@@ -179,6 +175,27 @@ The system uses MySQL with the following core tables:
 - Customer → Chain Leader (chain_leader_id)
 - Industry Brain → Area (area_id)
 - Chain Leader → Area + Industry
+
+#### feishu_crm Database
+CRM and opportunity data:
+- `as_opportunities` - AS system opportunities (448 records)
+- `ipg_clients` - IPG system client opportunities (1,678 records)
+- `sync_tasks` - Data synchronization task metadata
+
+#### enterprise_QD Database
+Qingdao enterprise archives:
+- `enterprise_QD` - Qingdao enterprise profiles (268 records)
+- Contains: company info, industry, revenue data, rankings
+
+#### Task_sync_new Database
+Work order/service ticket data:
+- `task_service_records` - Service work orders (86 records)
+- `task_service_records_raw` - Raw work order data
+- `task_service_record_users` - User assignments
+
+**Docker Containers:**
+- `mysql-feishu-crm` - Hosts feishu_crm, enterprise_QD, Task_sync_new databases
+- Port: 3306 (mapped to host 3306 or 3307)
 
 ### External Services
 
@@ -202,6 +219,45 @@ The system uses MySQL with the following core tables:
 3. **API Layer**: Create endpoint in `api/v1/endpoints/`
 4. **Schema**: Define request/response in `api/v1/schemas/`
 5. **Tests**: Add tests in `tests/unit/` and `tests/integration/`
+
+### Adding a New Data Source
+
+Example: Integrating a new database table with the opportunities API
+
+1. **Create Data Model** (`infrastructure/database/models/`):
+   ```python
+   @dataclass
+   class MyDataModel:
+       field1: str
+       field2: Optional[int]
+
+       def to_dict(self): ...
+
+       @classmethod
+       def from_db_row(cls, row): ...
+   ```
+
+2. **Create Repository** (`infrastructure/database/repositories/`):
+   ```python
+   class MyRepository:
+       def __init__(self):
+           self.database = "my_database"
+           self._connection_pool = None
+
+       def search_by_company_name(self, name, limit):
+           # Implementation with connection pooling
+   ```
+
+3. **Update API Endpoint** (`api/v1/endpoints/opportunities.py`):
+   - Import new repository
+   - Add query in `/search` endpoint
+   - Include in response data and summary
+
+4. **Update Frontend** (`city_brain_frontend/src/`):
+   - Add data property in `Home.vue`
+   - Update `fetchOpportunities()` to receive new data
+   - Pass to `OpportunitiesSection.vue` as prop
+   - Add display section with badge/cards in component
 
 ### Coding Standards
 
@@ -277,14 +333,52 @@ pkill -f "uvicorn.*9003"
 
 ## Data Flow
 
-### With Local Data (Complete):
+### Main Company Processing Flow
+
+#### With Local Data (Complete):
 User Input → Extract Company → Query Database → Check Completeness → Generate Summary with LLM → Return Result
 
-### With Local Data (Incomplete):
+#### With Local Data (Incomplete):
 User Input → Extract Company → Query Database → Detect Missing Info → Web Search (Bocha) → Merge Data → Generate Summary with LLM → Update Database → Return Result
 
-### Without Local Data:
+#### Without Local Data:
 User Input → Extract Company → No Database Match → Web Search (Bocha) → Generate Summary with LLM → Store in Database → Return Result
+
+### Opportunities/CRM Data Flow
+
+The system integrates four data sources via `/api/v1/opportunities/search`:
+
+1. **AS Opportunities** (feishu_crm.as_opportunities)
+   - Sales opportunities from AS system
+   - Searched by customer_name
+
+2. **IPG Clients** (feishu_crm.ipg_clients)
+   - Client opportunities from IPG system
+   - Searched by client_name
+
+3. **Enterprise Archives** (enterprise_QD.enterprise_QD)
+   - Qingdao enterprise profiles with revenue data
+   - Searched by company name
+
+4. **Work Orders** (Task_sync_new.task_service_records)
+   - Service tickets and work orders
+   - Searched by customer_company
+
+**Query Flow:**
+```
+User searches "临工重机" →
+  ├─ OpportunitiesRepository.find_as_opportunities_by_customer()
+  ├─ OpportunitiesRepository.find_ipg_clients_by_name()
+  ├─ EnterpriseQDRepository.search_by_keyword()
+  └─ WorkOrderRepository.search_by_company_name()
+→ Aggregate results → Return to frontend
+```
+
+**Frontend Display:**
+- AS system: Green badge
+- IPG system: Orange badge
+- Enterprise archive: Blue badge
+- Work orders: Red badge
 
 ## Common Troubleshooting
 
@@ -323,14 +417,34 @@ Check `city_brain_frontend/vite.config.js` - API requests to `/api` should proxy
 - `docs/guides/STARTUP_GUIDE.md` - System startup instructions
 - `docs/architecture/system-architecture.md` - Architecture documentation
 
+### Frontend Architecture
+
+**Key Components:**
+- `src/views/Home.vue` - Main page with company search and results display
+- `src/components/OpportunitiesSection.vue` - Displays AS/IPG/QD/Work Order data
+- `vite.config.js` - Build config with proxy to backend at `/api` → `http://localhost:9003`
+
+**Component Communication:**
+```
+Home.vue
+  ├─ Fetches opportunities via axios.get('/api/v1/opportunities/search')
+  ├─ Stores in data: asOpportunities, ipgClients, qdEnterprises, workOrders
+  └─ Passes to <OpportunitiesSection> component as props
+```
+
+**Vue Template Guidelines:**
+- Use `v-if`/`v-else-if`/`v-else` chains carefully - siblings must be adjacent
+- Conditional rendering with loading states: use separate `v-if` for loading skeletons
+- API proxy handles `/api` routes automatically via Vite config
+
 ## Important Notes
 
 - **Always use city_brain_system_refactored** for new development (not city_brain_system)
 - **Database queries**: Use repositories in `infrastructure/database/repositories/`, not direct SQL
 - **External API calls**: Always go through service managers with proper error handling
 - **Logging**: Use the logger from `infrastructure/utils/logger.py`, not print()
-- **Time handling**: The system has timezone-aware datetime utilities in `infrastructure/utils/datetime_utils.py`
 - **Text processing**: Use utilities in `infrastructure/utils/text_processor.py` for Chinese text handling
+- **Time handling**: System has timezone-aware datetime utilities in `infrastructure/utils/datetime_utils.py`
 
 ## Performance Considerations
 

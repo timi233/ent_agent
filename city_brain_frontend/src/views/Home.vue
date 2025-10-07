@@ -124,74 +124,84 @@
             </div>
           </div>
 
-          <!-- CRM 骨架占位：在 CRM 分块未就绪时显示 -->
           <div class="company-crm" v-else-if="sections?.crm?.loading">
+            <!-- CRM 骨架占位：在 CRM 分块未就绪时显示 -->
             <h3>相关商机信息</h3>
             <el-skeleton :rows="2" animated />
           </div>
 
-          <!-- CRM 无数据提示 -->
           <div class="company-crm no-data" v-else-if="!sections?.crm?.loading && !sections?.crm?.error && crmOpportunities.opportunities.length === 0">
+            <!-- CRM 无数据提示 -->
             <h3>相关商机信息</h3>
             <div class="no-crm-data">
               <p>暂未找到该企业的相关商机信息</p>
             </div>
           </div>
 
-          <div class="company-info" v-if="!sections?.info?.loading && !sections?.info?.error">
-            <div class="company-info-header">
-              <h3>企业信息摘要</h3>
-              <el-button 
-                type="primary" 
-                size="small" 
-                @click="showEditDialog = true"
-                :disabled="!result.data || (!result.data.customer_id && !result.data.details && !result.data.company_name)"
-              >
-                修正数据
-              </el-button>
-            </div>
-            
-            <div class="info-rows">
-              <!-- 第1行：企业名称 所在地区 企业地址 -->
-              <div class="row">
-                <div class="cell">
-                  <span class="info-label">企业名称</span>
-                  <span class="info-value">{{ displayVal('name') || (result.data?.company_name || '暂无') }}</span>
+          <div class="company-info">
+            <div v-if="!sections?.info?.loading && !sections?.info?.error">
+              <div class="company-info-header">
+                <h3>企业信息摘要</h3>
+                <el-button 
+                  type="primary" 
+                  size="small" 
+                  @click="showEditDialog = true"
+                  :disabled="!result.data || (!result.data.customer_id && !result.data.details && !result.data.company_name)"
+                >
+                  修正数据
+                </el-button>
+              </div>
+              
+              <div class="info-rows">
+                <!-- 第1行：企业名称 所在地区 企业地址 -->
+                <div class="row">
+                  <div class="cell">
+                    <span class="info-label">企业名称</span>
+                    <span class="info-value">{{ displayVal('name') || (result.data?.company_name || '暂无') }}</span>
+                  </div>
+                  <div class="cell">
+                    <span class="info-label">所在地区</span>
+                    <span class="info-value">{{ displayVal('district_name') }}</span>
+                  </div>
+                  <div class="cell">
+                    <span class="info-label">企业地址</span>
+                    <span class="info-value">{{ displayVal('address') }}</span>
+                  </div>
                 </div>
-                <div class="cell">
-                  <span class="info-label">所在地区</span>
-                  <span class="info-value">{{ displayVal('district_name') }}</span>
+                <!-- 第2行：所属行业 企业地位 所属产业大脑 -->
+                <div class="row">
+                  <div class="cell">
+                    <span class="info-label">所属行业</span>
+                    <span class="info-value">{{ displayVal('industry') }}</span>
+                  </div>
+                  <div class="cell">
+                    <span class="info-label">企业地位</span>
+                    <span class="info-value">{{ displayVal('company_status') }}</span>
+                  </div>
+                  <div class="cell empty"></div>
                 </div>
-                <div class="cell">
-                  <span class="info-label">企业地址</span>
-                  <span class="info-value">{{ displayVal('address') }}</span>
+                <!-- 第3行：产业链 产业链状态 -->
+                <div class="row">
+                  <div class="cell">
+                    <span class="info-label">产业链</span>
+                    <span class="info-value">{{ displayVal('industry_chain') }}</span>
+                  </div>
+                  <div class="cell">
+                    <span class="info-label">产业链状态</span>
+                    <span class="info-value">{{ displayVal('chain_status') }}</span>
+                  </div>
+                  <div class="cell empty"></div>
                 </div>
               </div>
-              <!-- 第2行：所属行业 企业地位 所属产业大脑 -->
-              <div class="row">
-                <div class="cell">
-                  <span class="info-label">所属行业</span>
-                  <span class="info-value">{{ displayVal('industry') }}</span>
-                </div>
-                <div class="cell">
-                  <span class="info-label">企业地位</span>
-                  <span class="info-value">{{ displayVal('company_status') }}</span>
-                </div>
-                <div class="cell empty"></div>
+              
+              <div class="source-info" v-if="result.source">
+                <p><strong>数据来源:</strong> {{ result.source === 'web_search' ? '网络搜索' : '本地数据库' }}</p>
               </div>
-              <!-- 第3行：产业链 产业链状态 -->
-
-
             </div>
-            
-            <div class="source-info" v-if="result.source">
-              <p><strong>数据来源:</strong> {{ result.source === 'web_search' ? '网络搜索' : '本地数据库' }}</p>
+            <div v-else>
+              <!-- info 骨架占位：在 info 分块未就绪时显示 -->
+              <el-skeleton :rows="4" animated />
             </div>
-          </div>
-          
-          <!-- info 骨架占位：在 info 分块未就绪时显示 -->
-          <div class="company-info" v-else>
-            <el-skeleton :rows="4" animated />
           </div>
           
           <!-- 产业大脑和产业链相关信息（数据库与结构化字段，优先展示） -->
@@ -263,8 +273,8 @@
             </div>
           </div>
 
-          <!-- news 骨架占位：在 news 分块未就绪时显示 -->
           <div class="company-news" v-else>
+            <!-- news 骨架占位：在 news 分块未就绪时显示 -->
             <el-skeleton :rows="3" animated />
           </div>
 

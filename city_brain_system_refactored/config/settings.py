@@ -24,19 +24,19 @@ except ImportError:
 
 
 class DatabaseSettings(BaseSettings):
-    """数据库配置"""
+    """数据库配置 - 从环境变量读取"""
 
-    host: str = Field(default="localhost", description="数据库主机地址")
-    port: int = Field(default=3306, description="数据库端口")
-    username: str = Field(default="City_Brain_user_mysql", description="数据库用户名")
-    password: str = Field(default=os.getenv("DB_PASSWORD", "CityBrain@2024"), description="数据库密码")
-    database: str = Field(default="City_Brain_DB", description="数据库名称")
-    charset: str = Field(default="utf8mb4", description="字符集")
+    host: str = Field(default=os.getenv("DB_HOST", "localhost"), description="数据库主机地址")
+    port: int = Field(default=int(os.getenv("DB_PORT", "3306")), description="数据库端口")
+    username: str = Field(default=os.getenv("DB_USERNAME", "root"), description="数据库用户名")
+    password: str = Field(default=os.getenv("DB_PASSWORD", "1qaz2wsx"), description="数据库密码")
+    database: str = Field(default=os.getenv("DB_DATABASE", "City_Brain_DB"), description="数据库名称")
+    charset: str = Field(default=os.getenv("DB_CHARSET", "utf8mb4"), description="字符集")
 
-    pool_size: int = Field(default=10, description="连接池大小")
-    max_overflow: int = Field(default=20, description="最大溢出连接数")
-    pool_timeout: int = Field(default=30, description="连接超时秒数")
-    pool_recycle: int = Field(default=3600, description="连接回收秒数")
+    pool_size: int = Field(default=int(os.getenv("DB_POOL_SIZE", "10")), description="连接池大小")
+    max_overflow: int = Field(default=int(os.getenv("DB_MAX_OVERFLOW", "20")), description="最大溢出连接数")
+    pool_timeout: int = Field(default=int(os.getenv("DB_POOL_TIMEOUT", "30")), description="连接超时秒数")
+    pool_recycle: int = Field(default=int(os.getenv("DB_POOL_RECYCLE", "3600")), description="连接回收秒数")
 
 
 class BochaAPISettings(BaseSettings):

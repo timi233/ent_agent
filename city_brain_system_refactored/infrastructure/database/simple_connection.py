@@ -20,17 +20,17 @@ except ImportError:
 try:
     from config.simple_settings import get_settings
 except ImportError:
-    # 简单的配置类作为后备
+    # 简单的配置类作为后备 - 从环境变量读取
     class SimpleSettings:
         def __init__(self):
             self.database = type('obj', (object,), {
-                'host': "localhost",
-                'port': 3306,
-                'username': "City_Brain_user_mysql",
-                'password': os.getenv("DB_PASSWORD", "CityBrain@2024"),
-                'database': "City_Brain_DB",
-                'charset': "utf8mb4",
-                'pool_size': 10
+                'host': os.getenv("DB_HOST", "localhost"),
+                'port': int(os.getenv("DB_PORT", "3306")),
+                'username': os.getenv("DB_USERNAME", "root"),
+                'password': os.getenv("DB_PASSWORD", "1qaz2wsx"),
+                'database': os.getenv("DB_DATABASE", "City_Brain_DB"),
+                'charset': os.getenv("DB_CHARSET", "utf8mb4"),
+                'pool_size': int(os.getenv("DB_POOL_SIZE", "10"))
             })()
     
     def get_settings():
