@@ -1,0 +1,15 @@
+API密钥有效性检查报告
+生成时间: 2025-10-01 23:39:54
+
+测试结果:
+- Bocha AI 搜索API: ✓ 正常
+- DeepSeek LLM API: ✓ 正常
+
+通过率: 2/2 (100%)
+
+配置信息:
+- BOCHA_BASE_URL: https://api.bochaai.com/v1/web-search
+- BOCHA_API_KEY: sk-a7700f379...a2e3
+- LLM_BASE_URL: https://api.deepseek.com
+- LLM_MODEL: deepseek-chat
+- LLM_API_KEY: sk-43d6f9758...4d7d

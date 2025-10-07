@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # 后端服务
+  backend:
+    build: 
+      context: ../city_brain_system
+      dockerfile: Dockerfile
+    ports:
+      - "9003:8000"
+    environment:
+      - BOCHA_API_KEY=${BOCHA_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+    volumes:
+      - ../city_brain_system/.env:/app/.env
+    restart: unless-stopped
+
+  # 前端服务
+  frontend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9002:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped

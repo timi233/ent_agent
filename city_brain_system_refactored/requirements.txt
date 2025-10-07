@@ -1,0 +1,49 @@
+# 城市大脑企业信息处理系统 - 重构版本依赖
+
+# Web框架
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# 数据库相关
+sqlalchemy==1.4.53
+pymysql==1.1.0
+alembic==1.12.1
+
+# 配置管理
+pydantic[dotenv]==1.10.13
+python-dotenv==1.0.0
+
+# 依赖注入
+dependency-injector==4.48.2
+
+# HTTP客户端
+httpx==0.25.2
+requests==2.31.0
+
+# 数据处理
+pandas==2.1.4
+numpy==1.24.4
+
+# 文本处理
+jieba==0.42.1
+regex==2023.10.3
+
+# 缓存
+redis==5.0.1
+
+# 日志
+loguru==0.7.2
+
+# 测试
+pytest==7.4.3
+pytest-asyncio==0.21.1
+pytest-cov==4.1.0
+
+# 开发工具
+black==23.11.0
+flake8==6.1.0
+mypy==1.7.1
+
+# 其他工具
+python-multipart==0.0.6
+jinja2==3.1.2
