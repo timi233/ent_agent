@@ -15,7 +15,7 @@ This is a City Brain Enterprise Information Processing System (城市大脑企�
 
 ## System Architecture
 
-The codebase contains THREE separate systems:
+The codebase contains FOUR separate systems:
 
 1. **city_brain_system_refactored/** - The main refactored backend (Clean Architecture)
    - Port: 9003
@@ -28,9 +28,17 @@ The codebase contains THREE separate systems:
    - Simpler structure, older implementation
    - **Do not use for new features**
 
-3. **city_brain_frontend/** - Vue 3 frontend
+3. **city_brain_frontend/** - Vue 3 frontend (current production version)
    - Port: 9002
+   - Simple chat-based interface
    - Proxies API requests to backend on port 9003
+   - **Currently in use**
+
+4. **city_brain_frontend_v2/** - Next-generation Vue 3 + TypeScript frontend
+   - Port: 9002
+   - Full domain-driven architecture with Pinia, composables, Storybook
+   - Features: dashboard, insights, operations, planning, admin modules
+   - **In development - not yet integrated**
 
 ## Common Commands
 
@@ -48,16 +56,22 @@ python3 main.py  # Starts on port 9003
 cd city_brain_system_refactored
 pip install -r requirements.txt
 
-# Run tests
-python -m pytest tests/                    # All tests (in tests/ subdirectory)
-python test_infrastructure.py              # Infrastructure tests
-python test_data_layer_complete.py         # Data layer tests
-python test_external_services.py           # External API tests
-python test_integration_e2e.py            # End-to-end tests
-python test_performance_benchmark.py       # Performance tests
+# Run tests (from city_brain_system_refactored/)
+# Pytest-based tests (organized in tests/ subdirectory)
+python -m pytest tests/unit/               # Unit tests
+python -m pytest tests/integration/        # Integration tests
+python -m pytest tests/                    # All pytest tests
+
+# Standalone test scripts (root level)
+python test_infrastructure.py              # Infrastructure: DB, connections
+python test_data_layer_complete.py         # Data layer: repositories, models
+python test_external_services.py           # External: Bocha, DeepSeek APIs
+python test_integration_e2e.py             # End-to-end integration
+python test_performance_benchmark.py       # Performance benchmarks
+python validate_repositories.py            # Repository validation
 ```
 
-### Frontend
+### Frontend (Current - v1)
 
 ```bash
 cd city_brain_frontend
@@ -66,6 +80,20 @@ npm run start        # Start dev server on port 9002
 npm run build        # Build for production
 npm run serve        # Preview production build
 ```
+
+### Frontend (Next Generation - v2)
+
+```bash
+cd city_brain_frontend_v2
+npm install          # Install dependencies
+npm run dev          # Start dev server on port 9002
+npm run build        # Build for production
+npm run lint         # ESLint + Prettier check
+npm run test         # Vitest + @testing-library
+npm run storybook    # Storybook component docs (port 7007)
+```
+
+**Note**: v2 is TypeScript-based with enhanced architecture but not yet integrated with production. Use v1 for production deployments.
 
 ### Full System
 
@@ -126,7 +154,9 @@ city_brain_system_refactored/
 │   │       ├── industry_repository.py
 │   │       ├── area_repository.py
 │   │       ├── opportunities_repository.py  # AS/IPG CRM data
-│   │       └── work_order_repository.py     # Service tickets
+│   │       ├── work_order_repository.py     # Service tickets
+│   │       ├── crm_repository.py            # CRM integrations
+│   │       └── crm_sync_repository.py       # CRM sync tasks
 │   ├── external/                 # External service clients
 │   │   ├── bocha_client.py       # Bocha AI search
 │   │   ├── llm_client.py         # LLM client
@@ -417,7 +447,7 @@ Check `city_brain_frontend/vite.config.js` - API requests to `/api` should proxy
 - `docs/guides/STARTUP_GUIDE.md` - System startup instructions
 - `docs/architecture/system-architecture.md` - Architecture documentation
 
-### Frontend Architecture
+### Frontend Architecture (v1 - Current)
 
 **Key Components:**
 - `src/views/Home.vue` - Main page with company search and results display
@@ -436,6 +466,25 @@ Home.vue
 - Use `v-if`/`v-else-if`/`v-else` chains carefully - siblings must be adjacent
 - Conditional rendering with loading states: use separate `v-if` for loading skeletons
 - API proxy handles `/api` routes automatically via Vite config
+
+### Frontend Architecture (v2 - Next Gen)
+
+**Structure:**
+- `src/components/base/` - Base UI components (Card, EmptyState)
+- `src/components/layout/` - Layout framework (AppShell, TopBar, Sidebar)
+- `src/components/data/` - Data display (tables, charts, forms, maps)
+- `src/components/feedback/` - Feedback components (Toast)
+- `src/views/` - Domain views (dashboard, insights, operations, planning, admin)
+- `src/stores/` - Pinia stores for state management
+- `src/composables/` - Reusable composition functions
+- `src/services/` - API layer aligned with backend DTOs
+
+**Key Features:**
+- TypeScript throughout for type safety
+- Storybook for component documentation
+- Vitest + Testing Library for unit tests
+- WebSocket integration for real-time notifications
+- Design tokens for consistent theming
 
 ## Important Notes
 

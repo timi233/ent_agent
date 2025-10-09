@@ -1,0 +1,50 @@
+:root {
+  --color-primary: #1f3c88;
+  --color-primary-dark: #0f1f4a;
+  --color-accent: #2fbfde;
+  --color-accent-muted: #9ee7f2;
+  --color-neutral-100: #f5f7fa;
+  --color-neutral-200: #e4e9f2;
+  --color-neutral-400: #98a0b3;
+  --color-neutral-600: #4f566b;
+  --color-neutral-800: #1b1f2b;
+  --color-success: #2fbf71;
+  --color-warning: #ffc857;
+  --color-danger: #f25f5c;
+
+  --font-base: 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+  --font-mono: 'Fira Code', 'JetBrains Mono', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  --shadow-soft: 0 10px 30px rgba(31, 60, 136, 0.08);
+  --shadow-medium: 0 18px 40px rgba(15, 31, 74, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-base);
+  background: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+  line-height: 1.5;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(31, 60, 136, 0.35);
+  border-radius: 999px;
+}
