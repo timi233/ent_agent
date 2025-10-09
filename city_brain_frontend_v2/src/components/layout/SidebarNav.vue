@@ -30,11 +30,11 @@ interface SidebarLink {
 }
 
 const links = computed<SidebarLink[]>(() => [
-  { to: '/dashboard', label: '仪表盘', icon: '📊' },
-  { to: '/insights', label: '洞察分析', icon: '🔍' },
-  { to: '/operations', label: '运营管理', icon: '🧭' },
-  { to: '/planning', label: '空间规划', icon: '🗺️' },
-  { to: '/admin', label: '权限配置', icon: '⚙️' }
+  { to: '/dashboard', label: '企业信息查询', icon: '📊' },
+  { to: '/insights', label: '商机洞察', icon: '🔍' },
+  { to: '/operations', label: '工单查询', icon: '🧭' }
+  // Planning路由已注释 - 后端无空间规划/图层数据
+  // Admin路由已移除 - 后端无鉴权系统
 ])
 </script>
 

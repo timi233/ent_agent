@@ -37,8 +37,9 @@ The codebase contains FOUR separate systems:
 4. **city_brain_frontend_v2/** - Next-generation Vue 3 + TypeScript frontend
    - Port: 9002
    - Full domain-driven architecture with Pinia, composables, Storybook
-   - Features: dashboard, insights, operations, planning, admin modules
-   - **In development - not yet integrated**
+   - Features: dashboard (企业信息查询), insights (商机洞察), operations (工单查询)
+   - **Status**: Refactored to align with backend data sources (2025-10-09)
+   - **Branch**: feature/v2-frontend-refactor (awaiting manual testing before merge to main)
 
 ## Common Commands
 
@@ -470,21 +471,55 @@ Home.vue
 ### Frontend Architecture (v2 - Next Gen)
 
 **Structure:**
-- `src/components/base/` - Base UI components (Card, EmptyState)
-- `src/components/layout/` - Layout framework (AppShell, TopBar, Sidebar)
-- `src/components/data/` - Data display (tables, charts, forms, maps)
-- `src/components/feedback/` - Feedback components (Toast)
-- `src/views/` - Domain views (dashboard, insights, operations, planning, admin)
-- `src/stores/` - Pinia stores for state management
-- `src/composables/` - Reusable composition functions
-- `src/services/` - API layer aligned with backend DTOs
+- `src/components/base/` - Base UI components (BaseCard, BaseEmptyState)
+- `src/components/layout/` - Layout framework (AppShell, TopBar, SidebarNav)
+- `src/components/data/` - Data display (OpportunityCard, StatisticsPanel, DataTable)
+- `src/views/` - Domain views (dashboard, insights, operations)
+- `src/stores/` - Pinia stores (company, opportunities)
+- `src/services/` - API layer (companyService, opportunitiesService, insightsService, operationsService)
+- `src/types/` - TypeScript type definitions (opportunities.ts)
 
 **Key Features:**
-- TypeScript throughout for type safety
+- TypeScript throughout for type safety (100% aligned with backend Python models)
 - Storybook for component documentation
 - Vitest + Testing Library for unit tests
-- WebSocket integration for real-time notifications
 - Design tokens for consistent theming
+- Reusable OpportunityCard component for all data sources (AS/IPG/QD/WorkOrder)
+
+**Refactoring (2025-10-09):**
+- ✅ Removed features without backend support (time-series charts, create ticket form, planning/admin modules)
+- ✅ Integrated multi-source data (AS opportunities, IPG clients, QD enterprises, work orders)
+- ✅ Dashboard: Added opportunities/work orders auto-loading when company is queried
+- ✅ Insights: Converted to statistics-based view with AS/IPG search capabilities
+- ✅ Operations: Converted to query-only work order search interface
+- ✅ Router: Commented out Planning and Admin routes (no backend data)
+- ✅ Navigation: Updated menu to show only 3 active modules (企业信息查询, 商机洞察, 工单查询)
+
+**Component Architecture:**
+```
+DashboardView.vue
+  ├─ CompanySearch (input + search button)
+  ├─ CompanyResult (displays API response from /v1/company/process)
+  └─ Auto-fetches opportunities via opportunitiesStore when company is found
+     └─ Displays AS/IPG/QD/WorkOrder sections with OpportunityCard components
+
+InsightsView.vue
+  ├─ Statistics panels (AS/IPG) from /v1/opportunities/statistics
+  ├─ Search controls (type selector + keyword input)
+  └─ DataTable for search results from /v1/opportunities/as/search or /v1/opportunities/ipg/search
+
+OperationsView.vue
+  ├─ Work order search input
+  ├─ Work order cards (OpportunityCard with work-order badge)
+  └─ Statistics panel (total, status distribution, priority distribution)
+```
+
+**API Integration:**
+- `/v1/company/process` - Company information query
+- `/v1/opportunities/search` - Multi-source opportunities/work orders search
+- `/v1/opportunities/statistics` - AS/IPG statistics
+- `/v1/opportunities/as/search` - AS system search
+- `/v1/opportunities/ipg/search` - IPG system search
 
 ## Important Notes
 
